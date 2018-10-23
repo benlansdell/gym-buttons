@@ -1,35 +1,33 @@
 """
-A simple OpenAI gym environment consisting of a white dot moving in a black
-square.
+A simple OpenAI gym environment consisting of a number of buttons that can be pushed, one of which 
+gives reward.
 """
 
 import numpy as np
-
 import gym
 from gym import spaces
 from gym.utils import seeding
 
-
-class ALE:
+class ALE(object):
     def __init__(self):
         self.lives = lambda: 0
 
 
-class MovingDotEnv(gym.Env):
+class ButtonsFamEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
         # Environment parameters
-        self.dot_size = [2, 2]
+        self.n_buttons = 10
         self.random_start = True
         self.max_steps = 1000
 
         # environment setup
         self.observation_space = spaces.Box(low=0,
-                                            high=255,
-                                            shape=(210, 160, 3))
-        self.centre = np.array([80, 105])
-        self.action_space = spaces.Discrete(5)
+                                            high=1,
+                                            shape=(1, self.n_buttons))
+        self.centre = np.array([1, self.n_buttons])
+        self.action_space = spaces.Discrete(self.n_buttons+1)
         self.viewer = None
 
         self._seed()
@@ -39,15 +37,19 @@ class MovingDotEnv(gym.Env):
         seed = None
         self.np_random, _ = seeding.np_random(seed)
 
+        self.state = np.zeros(self.n_buttons)
+        self.count = np.zeros(self.n_buttons)
+
         self._reset()
 
     def _reset(self):
+        #Set random button state
         if self.random_start:
-            x = self.np_random.randint(low=0, high=160)
-            y = self.np_random.randint(low=0, high=210)
-            self.pos = [x, y]
+            self.state = np.zeros(self.n_buttons)
+            self.count = np.zeros(self.n_buttons)
         else:
-            self.pos = [0, 0]
+            self.state = np.zeros(self.n_buttons)
+            self.count = np.zeros(self.n_buttons)
         self.steps = 0
         ob = self._get_ob()
         return ob
@@ -61,19 +63,13 @@ class MovingDotEnv(gym.Env):
         return [seed]
 
     def _get_ob(self):
-        ob = np.zeros((210, 160, 3), dtype=np.uint8)
-        x = self.pos[0]
-        y = self.pos[1]
-        w = self.dot_size[0]
-        h = self.dot_size[1]
-        ob[y-h:y+h, x-w:x+w, :] = 255
-        return ob
+        return self.state
 
     def get_action_meanings(self):
-        return ['NOOP', 'DOWN', 'RIGHT', 'UP', 'LEFT']
+        return ['NOOP'] + [str(i) for i in range(self.n_buttons)]
 
     def _step(self, action):
-        assert action >= 0 and action <= 4
+        assert action >= 0 and action <= self.n_buttons
 
         prev_pos = self.pos[:]
 
@@ -122,8 +118,14 @@ class MovingDotEnv(gym.Env):
 
         # We only import this here in case we're running on a headless server
         from gym.envs.classic_control import rendering
-        assert mode == 'human', "MovingDot only supports human render mode"
+        assert mode == 'human', "Button only supports human render mode"
         img = self._get_ob()
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
         self.viewer.imshow(img)
+
+class ButtonsObsEnv(ButtonsFamEnv):
+    pass
+
+class ButtonsTestEnv(ButtonsFamEnv):
+    pass

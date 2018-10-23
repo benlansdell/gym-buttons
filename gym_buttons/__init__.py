@@ -7,10 +7,10 @@ register(
 
 register(
     id='ButtonsObs-v0',
-    entry_point='gym_buttons.envs:ButtonsFamEnv'
+    entry_point='gym_buttons.envs:ButtonsObsEnv'
 )
 
 register(
     id='ButtonsTest-v0',
-    entry_point='gym_buttons.envs:ButtonsFamEnv'
+    entry_point='gym_buttons.envs:ButtonsTestEnv'
 )

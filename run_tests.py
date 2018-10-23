@@ -5,7 +5,5 @@ import numpy as np
 import gym
 
 # Test specifically importing a specific environment
-#from gym_minigrid.envs import DoorKeyEnv
+from gym_buttons.envs import ButtonsFamEnv, ButtonsObsEnv, ButtonsTestEnv
 
-# Test importing wrappers
-#from gym_minigrid.wrappers import *
