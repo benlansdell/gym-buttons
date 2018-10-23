@@ -1,5 +1,7 @@
 # gym-buttons
 
+[![Build Status](https://travis-ci.org/benlansdell/gym-buttons.svg?branch=master)](https://travis-ci.org/benlansdell/gym-buttons)
+
 A simple environment for OpenAI gym to test learning from observation. N buttons are presented, only one produces reward. The agent is tasked with using observation to infer which button to push.
 
 Possible actions are:
