@@ -1,6 +1,6 @@
 # gym-buttons
 
-A simple environment for OpenAI gym to test a learning from observation framework. N buttons are presented, only one produces reward. The agent is tasked with using observation to infer which 
+A simple environment for OpenAI gym to test learning from observation. N buttons are presented, only one produces reward. The agent is tasked with using observation to infer which button to push.
 
 Possible actions are:
 * 0: do nothing
@@ -34,6 +34,7 @@ env = gym.make("Buttons")
 env.n_buttons = 10
 # Adjust number of steps before termination
 env.max_steps = 2000
+env.max_test_steps = 10
 # Adjust random start
 env.random_start = False
 ```
