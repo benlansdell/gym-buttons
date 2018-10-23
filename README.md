@@ -1,53 +1,37 @@
-# gym-moving-dot
+# gym-buttons
 
-A simple environment for OpenAI gym consisting of a white dot moving around in
-a black square, designed as a simple test environment for reinforcement
-learning experiments.
-
-![](screenshot.gif)
-
-Observations are given as 210 x 160 pixel image with 3 channels for red, green
-and blue; the same size as Atari environments. The white dot has pixel values
-(255, 255, 255), while the black square has pixel values (0, 0, 0).
+A simple environment for OpenAI gym to test a learning from observation framework. N buttons are presented, only one produces reward. The agent is tasked with using observation to infer which 
 
 Possible actions are:
 * 0: do nothing
-* 1: move down
-* 2: move right
-* 3: move up
-* 4: move left
+* [i]: push button i
 
-Rewards are given based on how far the dot is from the centre.
-* If the dot moves closer to the centre, it receives reward +1.
-* If the dot moves further away from the centre, it receives reward -1.
-* If the dot sames the same distance from the centre, it receives reward 0.
+There are three phases/environments defined:
+
+1. Familiarization phase: no rewards are given. The agent can push buttons.
+2. Observation phase: actions do nothing -- buttons are pushed by some unknown process. Here they are uniformaly randomly pushed. Rewars are given when the reward button is pressed. 
+3. Test phase: agent can push buttons, and rewards are given. 
 
 The episode terminates after a given number of steps have been taken (by
-default 1,000). If `env.random_start` is set to True (the default), the dot
-starts in a different position at the start of each episode. Otherwise, the dot
-starts at the top left corner.
+default 1,000). 
 
 Training with actor-critic (A2C from OpenAI's baselines with one worker) takes
 about five minutes to achieve good reward. After about 20 minutes of training,
 expect your graphs to look something like:
 
-![](training.png)
-
 ## Installation
 
-`pip install --user git+https://github.com/mrahtz/gym-moving-dot`
+`pip install --user git+https://github.com/benlansdell/gym-buttons`
 
 ## Usage
 
 ```
-import gym_moving_dot
+import gym_buttons
 
-env = gym.make("MovingDot-v0")
-# A synonym if you need to use with a wrapper that checks for NoFrameskip
-# (e.g. wrap_deepmind)
-env = gym.make("MovingDotNoFrameskip-v0")
+env = gym.make("Buttons")
 
 # Adjust number of steps before termination
+env.n_buttons = 10
 env.max_steps = 2000
 # Adjust random start
 env.random_start = False
