@@ -1,3 +1,4 @@
 gym_buttons.egg-info
 gym_buttons/__pycache__
 gym_buttons/envs/__pycache__
+*.pyc

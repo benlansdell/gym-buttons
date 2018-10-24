@@ -12,7 +12,6 @@ class ALE(object):
     def __init__(self):
         self.lives = lambda: 0
 
-
 class ButtonsFamEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
@@ -40,16 +39,18 @@ class ButtonsFamEnv(gym.Env):
         self.state = np.zeros(self.n_buttons)
         self.count = np.zeros(self.n_buttons)
 
-        self._reset()
+        self.rewardaction = np.random.randint(self.n_buttons)
 
-    def _reset(self):
+        self.reset()
+
+    def reset(self):
         #Set random button state
         if self.random_start:
             self.state = np.zeros(self.n_buttons)
             self.count = np.zeros(self.n_buttons)
         else:
-            self.state = np.zeros(self.n_buttons)
-            self.count = np.zeros(self.n_buttons)
+            self.state = np.random.rantint(2, size=self.n_buttons)
+            self.count = np.random.rantint(self.maxtime, size=self.n_buttons)*self.state
         self.steps = 0
         ob = self._get_ob()
         return ob
@@ -66,28 +67,10 @@ class ButtonsFamEnv(gym.Env):
         return self.state
 
     def get_action_meanings(self):
-        return ['NOOP'] + [str(i) for i in range(self.n_buttons)]
+        return [str(i) for i in range(self.n_buttons)] + ['NOOP']
 
-    def _step(self, action):
+    def step(self, action):
         assert action >= 0 and action <= self.n_buttons
-
-        prev_pos = self.pos[:]
-
-        if action == 0:
-            # NOOP
-            pass
-        elif action == 1:
-            self.pos[1] += 1
-        elif action == 2:
-            self.pos[0] += 1
-        elif action == 3:
-            self.pos[1] -= 1
-        elif action == 4:
-            self.pos[0] -= 1
-        self.pos[0] = np.clip(self.pos[0],
-                              self.dot_size[0], 159 - self.dot_size[0])
-        self.pos[1] = np.clip(self.pos[1],
-                              self.dot_size[1], 209 - self.dot_size[1])
 
         ob = self._get_ob()
 
@@ -97,19 +80,25 @@ class ButtonsFamEnv(gym.Env):
         else:
             episode_over = True
 
-        dist1 = np.linalg.norm(prev_pos - self.centre)
-        dist2 = np.linalg.norm(self.pos - self.centre)
-        if dist2 < dist1:
-            reward = 1
-        elif dist2 == dist1:
-            reward = 0
-        else:
-            reward = -1
+        #Familiarization environment: no rewards
+        reward = 0
+
+        #Decrease counter
+        self.count -= 1
+        self.count = np.maximum(0, self.count)
+
+        #Push a button
+        if action < self.n_buttons:
+            if self.count[action] == 0:
+                self.count[action] = 1 + np.random.randint(3)
+
+        #Update state
+        self.state = (self.count > 0).astype(int)
 
         return ob, reward, episode_over, {}
 
     # Based on gym's atari_env.py
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
                 self.viewer.close()
@@ -125,7 +114,65 @@ class ButtonsFamEnv(gym.Env):
         self.viewer.imshow(img)
 
 class ButtonsObsEnv(ButtonsFamEnv):
-    pass
+    def step(self, action):
+        assert action >= 0 and action <= self.n_buttons
+
+        self.steps += 1
+        if self.steps < self.max_steps:
+            episode_over = False
+        else:
+            episode_over = True
+
+        #Observation environment: rewards
+        reward = 0
+
+        #Decrease counter
+        self.count -= 1
+        self.count = np.maximum(0, self.count)
+
+        #action = self.n_buttons
+        #Choose an action at random
+
+        #if 
+
+        if self.count[action] == 0:
+            self.count[action] = 1 + np.random.randint(3)
+            if action == self.rewardaction:
+                reward = 1
+
+        #Update state
+        self.state = (self.count > 0).astype(int)
+
+        ob = self._get_ob()
+
+        return ob, reward, episode_over, {}
 
 class ButtonsTestEnv(ButtonsFamEnv):
-    pass
+    def step(self, action):
+        assert action >= 0 and action <= self.n_buttons
+
+        self.steps += 1
+        if self.steps < self.max_steps:
+            episode_over = False
+        else:
+            episode_over = True
+
+        reward = 0
+
+        #Decrease counter
+        self.count -= 1
+        self.count = np.maximum(0, self.count)
+
+        #Push a button
+        if action < self.n_buttons:
+            if self.count[action] == 0:
+                self.count[action] = 1 + np.random.randint(3)
+                if action == self.rewardaction:
+                    reward = 1
+
+        #Update state
+        self.state = (self.count > 0).astype(int)
+
+        ob = self._get_ob()
+
+        return ob, reward, episode_over, {}
