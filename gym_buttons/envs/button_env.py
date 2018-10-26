@@ -72,8 +72,6 @@ class ButtonsFamEnv(gym.Env):
     def step(self, action):
         assert action >= 0 and action <= self.n_buttons
 
-        ob = self._get_ob()
-
         self.steps += 1
         if self.steps < self.max_steps:
             episode_over = False
@@ -83,17 +81,19 @@ class ButtonsFamEnv(gym.Env):
         #Familiarization environment: no rewards
         reward = 0
 
+        #Push a button
+        if action < self.n_buttons:
+            if self.count[action] == 0:
+                self.count[action] = 2 + np.random.randint(5)
+
         #Decrease counter
         self.count -= 1
         self.count = np.maximum(0, self.count)
 
-        #Push a button
-        if action < self.n_buttons:
-            if self.count[action] == 0:
-                self.count[action] = 1 + np.random.randint(3)
-
         #Update state
         self.state = (self.count > 0).astype(int)
+
+        ob = self._get_ob()
 
         return ob, reward, episode_over, {}
 
@@ -114,6 +114,10 @@ class ButtonsFamEnv(gym.Env):
         self.viewer.imshow(img)
 
 class ButtonsObsEnv(ButtonsFamEnv):
+    def __init__(self):
+        super(ButtonsObsEnv, self).__init__()
+        self.action_prob = 0.5
+
     def step(self, action):
         assert action >= 0 and action <= self.n_buttons
 
@@ -126,19 +130,18 @@ class ButtonsObsEnv(ButtonsFamEnv):
         #Observation environment: rewards
         reward = 0
 
+        action = self.n_buttons
+        #Choose an action at random
+        if np.random.rand() < self.action_prob:
+            action = np.random.randint(self.n_buttons)
+            if self.count[action] == 0:
+                self.count[action] = 2 + np.random.randint(5)
+                if action == self.rewardaction:
+                    reward = 1
+
         #Decrease counter
         self.count -= 1
         self.count = np.maximum(0, self.count)
-
-        #action = self.n_buttons
-        #Choose an action at random
-
-        #if 
-
-        if self.count[action] == 0:
-            self.count[action] = 1 + np.random.randint(3)
-            if action == self.rewardaction:
-                reward = 1
 
         #Update state
         self.state = (self.count > 0).astype(int)
@@ -159,16 +162,16 @@ class ButtonsTestEnv(ButtonsFamEnv):
 
         reward = 0
 
-        #Decrease counter
-        self.count -= 1
-        self.count = np.maximum(0, self.count)
-
         #Push a button
         if action < self.n_buttons:
             if self.count[action] == 0:
-                self.count[action] = 1 + np.random.randint(3)
+                self.count[action] = 2 + np.random.randint(5)
                 if action == self.rewardaction:
                     reward = 1
+
+        #Decrease counter
+        self.count -= 1
+        self.count = np.maximum(0, self.count)
 
         #Update state
         self.state = (self.count > 0).astype(int)
